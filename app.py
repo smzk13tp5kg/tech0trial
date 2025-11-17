@@ -182,7 +182,7 @@ TERMS = {
 # ----------------------------------------
 # 3 カラム構成
 # ----------------------------------------
-col_left, col_center, col_right = st.columns([1.2, 2, 1.2])
+ccol_left, col_center, col_right = st.columns([1.2, 1.4, 1.8])
 
 # ----------------------------------------
 # 左：用語選択（固定）
@@ -225,4 +225,5 @@ with col_right:
     """
     st.markdown(scroll_area_style, unsafe_allow_html=True)
     st.markdown(f"<div class='scroll-area'>{GIT_OVERVIEW}</div>", unsafe_allow_html=True)
+
 
