@@ -14,7 +14,7 @@ st.title("Git 用語ミニ辞典")
 # 左カラムに表示する Git 全体説明
 # ----------------------------------------
 GIT_OVERVIEW = """
-## ◆ OneDrive と Git の違い
+### **◆ OneDrive と Git の違い**
 
 ### 🔵 1. 管理する単位が違う
 
@@ -225,3 +225,4 @@ with col_right:
     st.markdown(f"**意味：** {term['meaning']}")
     st.markdown("---")
     st.markdown(term["desc"])
+
