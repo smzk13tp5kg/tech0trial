@@ -8,32 +8,39 @@ st.set_page_config(
     layout="wide"
 )
 
-# ★ タイトルから「（OneDriveとの比較で理解）」を削除
 st.title("Git 用語ミニ辞典")
 
-
 # ----------------------------------------
-# 右：Git全体の説明（固定＋スクロール表示）
+# Git 全体説明（右カラムに固定表示するテキスト）
 # ----------------------------------------
-with col_right:
-    st.subheader("Git の基本説明（固定）")
+GIT_OVERVIEW = """
+## 🔵 Git と OneDrive の違い（固定表示）
 
-    # ▼ CSS で高さ固定＋スクロール指定
-    scroll_area_style = """
-    <style>
-    .scroll-area {
-        height: 600px;        /* ← 好きな高さにしてOK */
-        overflow-y: scroll;
-        padding-right: 10px;
-        border: 1px solid #DDD;
-        border-radius: 5px;
-    }
-    </style>
-    """
-    st.markdown(scroll_area_style, unsafe_allow_html=True)
+### 1. 管理する単位が違う
+**OneDrive**：ファイル単体の過去版を保存（最大500版）  
+**Git**：フォルダ全体の“その瞬間の状態”を保存  
+→ 履歴は無制限  
 
-    st.markdown(f"<div class='scroll-area'>{GIT_OVERVIEW}</div>", unsafe_allow_html=True)
+---
 
+### 2. 壊したときに戻せる範囲が違う
+**OneDrive**  
+- 消したファイルだけ戻せる  
+- フォルダ全体は戻らない  
+
+**Git**  
+- フォルダ全体を過去状態に戻せる  
+- うっかり削除しても安全  
+
+---
+
+### 3. 履歴の作られ方が違う
+**OneDrive**：修正前のファイルコピーを丸ごと保存  
+**Git**：  
+- 変わった部分だけ新しく保存  
+- 変わらない部分は過去のデータを再利用  
+→ それでも「フォルダ丸ごとのスナップショット」が残る
+"""
 
 # ----------------------------------------
 # 用語データ（中央で切り替わる）
@@ -102,12 +109,10 @@ TERMS = {
     # 他の用語も同じスタイルで追加していけばOK
 }
 
-
 # ----------------------------------------
 # 3 カラム構成
 # ----------------------------------------
 col_left, col_center, col_right = st.columns([1.2, 2, 1.2])
-
 
 # ----------------------------------------
 # 左：用語選択（固定）
@@ -120,7 +125,6 @@ with col_left:
         index=0
     )
 
-
 # ----------------------------------------
 # 中央：用語の説明（選択に応じて変わる）
 # ----------------------------------------
@@ -131,11 +135,23 @@ with col_center:
     st.markdown("---")
     st.markdown(term["desc"])
 
-
 # ----------------------------------------
-# 右：Git全体の説明（固定）
+# 右：Git全体の説明（固定＋スクロール表示）
 # ----------------------------------------
 with col_right:
     st.subheader("Git の基本説明（固定）")
-    st.markdown(GIT_OVERVIEW)
 
+    # ▼ CSS で高さ固定＋スクロール指定
+    scroll_area_style = """
+    <style>
+    .scroll-area {
+        height: 600px;        /* ← 好きな高さにしてOK */
+        overflow-y: scroll;
+        padding-right: 10px;
+        border: 1px solid #DDD;
+        border-radius: 5px;
+    }
+    </style>
+    """
+    st.markdown(scroll_area_style, unsafe_allow_html=True)
+    st.markdown(f"<div class='scroll-area'>{GIT_OVERVIEW}</div>", unsafe_allow_html=True)
