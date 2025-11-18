@@ -1,4 +1,5 @@
 import streamlit as st
+import pandas as pd
 
 # ==============================
 # ページ設定
@@ -7,114 +8,17 @@ st.set_page_config(
     page_title="Git用語辞典",
     page_icon="📚",
     layout="wide",
-    initial_sidebar_state="collapsed"
+    initial_sidebar_state="expanded",
 )
 
 # ==============================
-# カスタムCSS
+# カスタムCSS（見た目用のみ）
 # ==============================
-st.markdown("""
+st.markdown(
+    """
 <style>
-/* 画面全体のスクロールを止める */
-html, body {
-    height: 100%;
-    margin: 0;
-}
-
-/* Streamlitのメインビューコンテナのスクロールを止める */
-[data-testid="stAppViewContainer"] {
-    height: 100vh;
-    overflow: hidden;
-}
-
-/* 全体コンテナの余白調整 */
 .block-container {
-    padding-top: 1.5rem;
-    padding-bottom: 1rem;
     max-width: 1600px;
-}
-
-/* ヘッダースタイル */
-.main-header {
-    background-color: white;
-    padding: 1.0rem 1.5rem;
-    border-bottom: 1px solid #e5e7eb;
-    margin-bottom: 0;
-}
-
-.main-header h1 {
-    margin: 0;
-    font-size: 1.25rem;
-    color: #111827;
-}
-
-/* ---------------------------
-   column のレイアウト調整
-   1,2番目: 検索バー用（高さ指定なし）
-   3,4,5番目: 本体3カラム（高さ＋スクロール）
-   --------------------------- */
-
-/* 検索バーの2カラム */
-[data-testid="column"]:nth-of-type(1),
-[data-testid="column"]:nth-of-type(2) {
-    padding: 0 1.5rem;
-}
-
-/* 本体3カラム（左・中・右） */
-[data-testid="column"]:nth-of-type(3),
-[data-testid="column"]:nth-of-type(4),
-[data-testid="column"]:nth-of-type(5) {
-    padding: 1.5rem;
-    height: calc(100vh - 120px);  /* ヘッダー＋検索バーぶんの調整値 */
-    overflow-y: auto;             /* 各カラムごとのスクロール */
-    box-sizing: border-box;
-    background-color: #ffffff;
-}
-
-/* 左カラム（Git説明） */
-[data-testid="column"]:nth-of-type(3) {
-    border-right: 1px solid #e5e7eb;
-}
-
-/* 中央カラム（用語一覧） */
-[data-testid="column"]:nth-of-type(4) {
-    background-color: #f9fafb;
-    border-right: 1px solid #e5e7eb;
-}
-
-/* 右カラム（詳細）はデフォルトの白 */
-
-/* 用語リストのボタン */
-.term-button {
-    width: 100%;
-    text-align: left;
-    padding: 0.75rem 1rem;
-    margin-bottom: 0.5rem;
-    border: 1px solid #e5e7eb;
-    border-radius: 0.5rem;
-    background-color: white;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-size: 0.875rem;
-}
-
-.term-button:hover {
-    background-color: #f9fafb;
-    border-color: #3b82f6;
-}
-
-.term-button.selected {
-    background-color: #eff6ff;
-    border-color: #3b82f6;
-}
-
-/* カテゴリーヘッダー */
-.category-header {
-    color: #6b7280;
-    font-size: 0.875rem;
-    font-weight: 600;
-    margin-top: 1.5rem;
-    margin-bottom: 0.5rem;
 }
 
 /* 情報ボックス */
@@ -123,36 +27,21 @@ html, body {
     border-radius: 0.5rem;
     margin-bottom: 1rem;
 }
-
 .info-box.blue {
     background-color: #eff6ff;
     border: 1px solid #bfdbfe;
 }
-
 .info-box.green {
     background-color: #f0fdf4;
     border: 1px solid #bbf7d0;
 }
-
 .info-box.purple {
     background-color: #faf5ff;
     border: 1px solid #e9d5ff;
 }
-
 .info-box.amber {
     background-color: #fffbeb;
     border: 1px solid #fde68a;
-}
-
-/* コードブロック */
-.code-block {
-    background-color: #1e293b;
-    color: #e2e8f0;
-    padding: 1rem;
-    border-radius: 0.5rem;
-    font-family: monospace;
-    margin-bottom: 0.75rem;
-    font-size: 0.875rem;
 }
 
 /* タグ */
@@ -166,13 +55,21 @@ html, body {
     margin-bottom: 0.75rem;
 }
 
+/* カテゴリーヘッダー */
+.category-header {
+    color: #6b7280;
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
 /* ワークフローステップ */
 .workflow-step {
     display: flex;
     gap: 0.75rem;
     margin-bottom: 0.75rem;
 }
-
 .step-number {
     width: 1.5rem;
     height: 1.5rem;
@@ -185,32 +82,13 @@ html, body {
     font-size: 0.875rem;
     flex-shrink: 0;
 }
-
-/* 関連用語カード */
-.related-term {
-    background-color: white;
-    border: 1px solid #e5e7eb;
-    border-radius: 0.5rem;
-    padding: 1rem;
-    margin-bottom: 0.75rem;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.related-term:hover {
-    background-color: #f9fafb;
-    border-color: #3b82f6;
-}
-
-/* 検索ボックス */
-.stTextInput > div > div > input {
-    border-radius: 0.5rem;
-}
 </style>
-""", unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True,
+)
 
 # ==============================
-# 用語データ（元のまま）
+# 用語データ
 # ==============================
 TERMS = [
     {
@@ -221,9 +99,9 @@ TERMS = [
         "full_description": "リポジトリは、Gitでプロジェクトを管理するための保管場所です。ファイルやディレクトリの状態を記録し、その変更履歴を保存します。ローカルリポジトリ（自分のPC上）とリモートリポジトリ（GitHubなどのサーバー上）の2種類があります。",
         "examples": [
             "git init でローカルリポジトリを作成",
-            "git clone でリモートリポジトリを複製"
+            "git clone でリモートリポジトリを複製",
         ],
-        "related_terms": ["commit", "clone", "remote"]
+        "related_terms": ["commit", "clone", "remote"],
     },
     {
         "id": "commit",
@@ -233,9 +111,9 @@ TERMS = [
         "full_description": "コミットは、ファイルの変更をリポジトリに記録する操作です。スナップショットのように、その時点のプロジェクトの状態を保存します。各コミットには一意のIDが付与され、いつでもその状態に戻ることができます。コミットメッセージを付けることで、何を変更したかを記録できます。",
         "examples": [
             "git add . で変更をステージング",
-            "git commit -m \"メッセージ\" でコミット"
+            'git commit -m "メッセージ" でコミット',
         ],
-        "related_terms": ["staging", "push", "log"]
+        "related_terms": ["staging", "push", "log"],
     },
     {
         "id": "branch",
@@ -245,9 +123,9 @@ TERMS = [
         "full_description": "ブランチは、開発作業を本流から分岐させる機能です。新機能の開発やバグ修正を、メインの開発ラインに影響を与えずに行えます。作業が完了したら、マージして本流に統合します。複数人での並行開発に不可欠な機能です。",
         "examples": [
             "git branch feature/new-feature で新しいブランチ作成",
-            "git checkout -b feature/new-feature でブランチ作成と切り替えを同時に実行"
+            "git checkout -b feature/new-feature でブランチ作成と切り替えを同時に実行",
         ],
-        "related_terms": ["merge", "checkout", "main"]
+        "related_terms": ["merge", "checkout", "main"],
     },
     {
         "id": "merge",
@@ -257,9 +135,9 @@ TERMS = [
         "full_description": "マージは、異なるブランチの変更を統合する操作です。feature ブランチでの開発が完了したら、main ブランチにマージして変更を反映させます。自動的に統合できない場合はコンフリクトが発生し、手動で解決する必要があります。",
         "examples": [
             "git merge feature/new-feature で現在のブランチにマージ",
-            "git merge --no-ff でマージコミットを必ず作成"
+            "git merge --no-ff でマージコミットを必ず作成",
         ],
-        "related_terms": ["branch", "conflict", "rebase"]
+        "related_terms": ["branch", "conflict", "rebase"],
     },
     {
         "id": "push",
@@ -269,9 +147,9 @@ TERMS = [
         "full_description": "プッシュは、ローカルリポジトリのコミットをリモートリポジトリに送信する操作です。これにより、他の開発者と変更を共有できます。プッシュする前に、リモートの最新状態を取得（pull）することが推奨されます。",
         "examples": [
             "git push origin main でmainブランチをプッシュ",
-            "git push -u origin feature でブランチを初回プッシュ"
+            "git push -u origin feature でブランチを初回プッシュ",
         ],
-        "related_terms": ["pull", "remote", "commit"]
+        "related_terms": ["pull", "remote", "commit"],
     },
     {
         "id": "pull",
@@ -281,9 +159,9 @@ TERMS = [
         "full_description": "プルは、リモートリポジトリの変更をローカルリポジトリに取り込む操作です。fetch（取得）とmerge（統合）を同時に行います。チーム開発では、作業開始前に必ずpullして最新状態にすることが重要です。",
         "examples": [
             "git pull origin main でリモートの変更を取得",
-            "git pull --rebase でリベースしながら取得"
+            "git pull --rebase でリベースしながら取得",
         ],
-        "related_terms": ["push", "fetch", "merge"]
+        "related_terms": ["push", "fetch", "merge"],
     },
     {
         "id": "clone",
@@ -293,9 +171,9 @@ TERMS = [
         "full_description": "クローンは、リモートリポジトリ全体をローカルにコピーする操作です。GitHubなどからプロジェクトをダウンロードして開発を始める際に使用します。履歴も含めて完全にコピーされます。",
         "examples": [
             "git clone https://github.com/user/repo.git",
-            "git clone git@github.com:user/repo.git でSSH経由でクローン"
+            "git clone git@github.com:user/repo.git でSSH経由でクローン",
         ],
-        "related_terms": ["repository", "remote", "fetch"]
+        "related_terms": ["repository", "remote", "fetch"],
     },
     {
         "id": "staging",
@@ -306,9 +184,9 @@ TERMS = [
         "examples": [
             "git add file.txt で特定のファイルをステージング",
             "git add . ですべての変更をステージング",
-            "git reset HEAD file.txt でステージングを取り消し"
+            "git reset HEAD file.txt でステージングを取り消し",
         ],
-        "related_terms": ["commit", "add", "status"]
+        "related_terms": ["commit", "add", "status"],
     },
     {
         "id": "conflict",
@@ -320,9 +198,9 @@ TERMS = [
             "コンフリクトマーカーを確認",
             "必要な変更を残して不要な部分を削除",
             "git add で解決済みをマーク",
-            "git commit でマージを完了"
+            "git commit でマージを完了",
         ],
-        "related_terms": ["merge", "rebase", "diff"]
+        "related_terms": ["merge", "rebase", "diff"],
     },
     {
         "id": "remote",
@@ -333,9 +211,9 @@ TERMS = [
         "examples": [
             "git remote -v でリモート一覧を表示",
             "git remote add origin <URL> でリモートを追加",
-            "git remote rename old new で名前変更"
+            "git remote rename old new で名前変更",
         ],
-        "related_terms": ["push", "pull", "clone"]
+        "related_terms": ["push", "pull", "clone"],
     },
     {
         "id": "fetch",
@@ -345,9 +223,9 @@ TERMS = [
         "full_description": "フェッチは、リモートリポジトリの最新情報を取得しますが、ローカルのブランチには自動的にマージしません。pullと異なり、安全に確認してからマージできます。",
         "examples": [
             "git fetch origin でリモートの情報を取得",
-            "git fetch --all ですべてのリモートから取得"
+            "git fetch --all ですべてのリモートから取得",
         ],
-        "related_terms": ["pull", "remote", "merge"]
+        "related_terms": ["pull", "remote", "merge"],
     },
     {
         "id": "rebase",
@@ -357,9 +235,9 @@ TERMS = [
         "full_description": "リベースは、コミット履歴を別のベース上に付け替える操作です。mergeと異なり、履歴を一直線に保つことができます。ただし、既に共有されているコミットには使用すべきではありません。",
         "examples": [
             "git rebase main で現在のブランチをmainの最新に付け替え",
-            "git rebase -i HEAD~3 で対話的にコミットを整理"
+            "git rebase -i HEAD~3 で対話的にコミットを整理",
         ],
-        "related_terms": ["merge", "commit", "interactive"]
+        "related_terms": ["merge", "commit", "interactive"],
     },
     {
         "id": "stash",
@@ -370,9 +248,9 @@ TERMS = [
         "examples": [
             "git stash で変更を退避",
             "git stash pop で退避した変更を復元",
-            "git stash list で退避一覧を表示"
+            "git stash list で退避一覧を表示",
         ],
-        "related_terms": ["commit", "checkout", "branch"]
+        "related_terms": ["commit", "checkout", "branch"],
     },
     {
         "id": "tag",
@@ -382,10 +260,10 @@ TERMS = [
         "full_description": "タグは、特定のコミットに名前をつけて記録する機能です。主にリリースバージョンを記録するために使用されます（v1.0.0など）。軽量タグと注釈付きタグの2種類があります。",
         "examples": [
             "git tag v1.0.0 で軽量タグを作成",
-            "git tag -a v1.0.0 -m \"Release 1.0\" で注釈付きタグ",
-            "git push origin v1.0.0 でタグをプッシュ"
+            'git tag -a v1.0.0 -m "Release 1.0" で注釈付きタグ',
+            "git push origin v1.0.0 でタグをプッシュ",
         ],
-        "related_terms": ["commit", "release", "version"]
+        "related_terms": ["commit", "release", "version"],
     },
     {
         "id": "checkout",
@@ -396,11 +274,13 @@ TERMS = [
         "examples": [
             "git checkout main でmainブランチに切り替え",
             "git checkout -b new-branch で新ブランチ作成と切り替え",
-            "git checkout <commit-id> で特定のコミットを確認"
+            "git checkout <commit-id> で特定のコミットを確認",
         ],
-        "related_terms": ["branch", "switch", "restore"]
-    }
+        "related_terms": ["branch", "switch", "restore"],
+    },
 ]
+
+CATEGORIES = ["基本概念", "基本操作", "応用操作", "トラブルシューティング"]
 
 # ==============================
 # セッション状態
@@ -411,236 +291,353 @@ if "selected_term_id" not in st.session_state:
 if "search_query" not in st.session_state:
     st.session_state.search_query = ""
 
+if "term_memos" not in st.session_state:
+    st.session_state.term_memos = {}  # term_id -> memo text
+
+
 # ==============================
-# ヘッダー
+# タイトル & メトリクス
 # ==============================
-st.markdown(
-    """
-    <div class="main-header">
-        <h1>📚 Git用語辞典</h1>
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
+st.title("📚 Git用語ミニ辞典")
+
+top_col1, top_col2 = st.columns([3, 1])
+
+with top_col1:
+    st.markdown(
+        "Git の基本用語を日本語でざっと確認できるミニ辞典です。"
+        "検索・カテゴリフィルタ・使用例・関連用語をひとつの画面で確認できます。"
+    )
+
+with top_col2:
+    total_terms = len(TERMS)
+    total_categories = len(set(t["category"] for t in TERMS))
+    st.metric("登録用語数", total_terms)
+    st.metric("カテゴリ数", total_categories)
+
+st.info("💡 左のサイドバーから表示モードやフィルタ条件を変更できます。")
+
+
+# ==============================
+# サイドバー（機能いろいろ詰め込みゾーン）
+# ==============================
+with st.sidebar:
+    st.subheader("⚙ 表示設定")
+
+    mode = st.radio("学習モード", options=["辞書モード", "クイズ準備中"], index=0)
+
+    category_filter = st.selectbox(
+        "カテゴリフィルタ",
+        options=["すべて"] + CATEGORIES,
+        index=0,
+    )
+
+    include_advanced = st.checkbox("応用操作・トラブルシューティングも含める", value=True)
+
+    max_items = st.slider("最大表示件数", min_value=5, max_value=50, value=20, step=5)
+
+    st.markdown("---")
+    st.caption("選択中の用語に対する自分用メモ")
+
+    current_id = st.session_state.selected_term_id
+    current_memo = st.session_state.term_memos.get(current_id, "")
+
+    memo_text = st.text_area(
+        "この用語の社内での使い方・注意点",
+        value=current_memo,
+        height=120,
+    )
+    st.session_state.term_memos[current_id] = memo_text
+
+    st.markdown("---")
+    st.caption("このアプリについてのフィードバック（ダミー）")
+
+    with st.form("feedback_form"):
+        name = st.text_input("お名前（任意）")
+        rating = st.slider("分かりやすさ（1〜5）", 1, 5, 4)
+        comment = st.text_area("コメント", height=80)
+        submitted = st.form_submit_button("送信")
+        if submitted:
+            st.success("フィードバックありがとうございます！")
+
 
 # ==============================
 # 検索バー
 # ==============================
 search_col1, search_col2 = st.columns([3, 1])
+
 with search_col1:
     search_query = st.text_input(
         "🔍 用語を検索...",
         value=st.session_state.search_query,
-        label_visibility="collapsed",
-        placeholder="用語を検索...",
+        placeholder="用語名や一言説明で検索",
     )
     st.session_state.search_query = search_query
 
-filtered_terms = [
-    term
-    for term in TERMS
-    if search_query.lower() in term["name"].lower()
-    or search_query.lower() in term["short_description"].lower()
-]
+with search_col2:
+    st.caption("※ 大文字小文字は区別されません")
+
 
 # ==============================
-# 3カラムレイアウト
+# 用語フィルタリング
 # ==============================
-col1, col2, col3 = st.columns([1.2, 1, 2])
+filtered_terms = TERMS
 
-# 左カラム: Gitの説明
-with col1:
-    st.markdown("### 🌿 Gitとは")
-    st.markdown(
-        "Gitは、ソースコードのバージョン管理システムです。"
-        "ファイルの変更履歴を記録し、過去の状態にいつでも戻ることができます。"
-    )
+# カテゴリフィルタ
+if category_filter != "すべて":
+    filtered_terms = [t for t in filtered_terms if t["category"] == category_filter]
 
-    st.markdown(
-        """
-        <div class="info-box blue">
-            <h4 style="margin: 0 0 0.5rem 0; color: #1e40af;">📖 なぜGitが必要？</h4>
-            <ul style="margin: 0; padding-left: 1.25rem; font-size: 0.875rem; color: #1e40af;">
-                <li>変更履歴を完全に記録</li>
-                <li>いつでも過去の状態に戻せる</li>
-                <li>複数人で同時に開発可能</li>
-                <li>実験的な開発を安全に実施</li>
-            </ul>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+# 応用・トラブルの除外
+if not include_advanced:
+    filtered_terms = [
+        t
+        for t in filtered_terms
+        if t["category"] not in ("応用操作", "トラブルシューティング")
+    ]
 
-    st.markdown(
-        """
-        <div class="info-box green">
-            <h4 style="margin: 0 0 0.5rem 0; color: #166534;">👥 チーム開発での利点</h4>
-            <ul style="margin: 0; padding-left: 1.25rem; font-size: 0.875rem; color: #166534;">
-                <li>各自が独立して作業できる</li>
-                <li>変更内容を簡単に共有</li>
-                <li>コードレビューが容易</li>
-                <li>誰が何を変更したか追跡可能</li>
-            </ul>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+# 検索フィルタ
+if search_query:
+    q = search_query.lower()
+    filtered_terms = [
+        t
+        for t in filtered_terms
+        if q in t["name"].lower() or q in t["short_description"].lower()
+    ]
 
-    st.markdown(
-        """
-        <div class="info-box purple">
-            <h4 style="margin: 0 0 0.5rem 0; color: #6b21a8;">🛡️ 安全性</h4>
-            <ul style="margin: 0; padding-left: 1.25rem; font-size: 0.875rem; color: #6b21a8;">
-                <li>データの完全性を保証</li>
-                <li>分散型で障害に強い</li>
-                <li>バックアップが自動的に作成</li>
-                <li>誤った変更も簡単に復元</li>
-            </ul>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+# 件数制限
+filtered_terms = filtered_terms[:max_items]
 
-    st.markdown("---")
-    st.markdown("### 🔄 基本的なワークフロー")
 
-    for i, step in enumerate(
-        [
+# ==============================
+# タブレイアウト
+# ==============================
+tab_dict, tab_table, tab_memo = st.tabs(["📋 辞書ビュー", "📊 一覧表", "📝 ノート"])
+
+# ---------- タブ1：辞書ビュー ----------
+with tab_dict:
+    col_left, col_mid, col_right = st.columns([1.4, 1.2, 2])
+
+    # 左カラム：Gitとは
+    with col_left:
+        st.subheader("🌿 Gitとは")
+
+        st.markdown(
+            """
+Gitは、ソースコードのバージョン管理システムです。
+ファイルの変更履歴を記録し、過去の状態にいつでも戻ることができます。
+"""
+        )
+
+        with st.expander("📖 なぜGitが必要？", expanded=True):
+            st.markdown(
+                """
+- 変更履歴を完全に記録できる  
+- いつでも過去の状態に戻せる  
+- 複数人で同時に開発できる  
+- 実験的な開発を安全に実施できる  
+"""
+            )
+
+        with st.expander("👥 チーム開発での利点"):
+            st.markdown(
+                """
+- 各自が独立して作業できる  
+- 変更内容を簡単に共有できる  
+- コードレビューが容易  
+- 誰が何を変更したか追跡できる  
+"""
+            )
+
+        with st.expander("🛡️ 安全性"):
+            st.markdown(
+                """
+- データの完全性を保証  
+- 分散型で障害に強い  
+- 複数リモートでバックアップ  
+- 誤った変更も簡単に復元  
+"""
+            )
+
+        st.markdown("---")
+        st.markdown("#### 🔄 基本的なワークフロー")
+        steps = [
             "ファイルを編集",
             "変更をステージング（git add）",
             "コミット（git commit）",
             "リモートにプッシュ（git push）",
-        ],
-        1,
-    ):
+        ]
+        for i, step in enumerate(steps, 1):
+            st.markdown(
+                f"""
+<div class="workflow-step">
+  <div class="step-number">{i}</div>
+  <div style="font-size: 0.875rem; color: #374151; padding-top: 0.125rem;">
+    {step}
+  </div>
+</div>
+""",
+                unsafe_allow_html=True,
+            )
+
+        st.markdown("---")
         st.markdown(
-            f"""
-            <div class="workflow-step">
-                <div class="step-number">{i}</div>
-                <div style="font-size: 0.875rem; color: #374151; padding-top: 0.125rem;">
-                    {step}
-                </div>
-            </div>
-            """,
+            """
+<div class="info-box amber">
+  <p style="margin: 0; font-size: 0.875rem; color: #92400e;">
+    💡 <strong>ヒント：</strong>
+    最初は add / commit / push / pull の4つだけに集中して、
+    実際に手を動かしながら覚えるのがおすすめです。
+  </p>
+</div>
+""",
             unsafe_allow_html=True,
         )
 
-    st.markdown("---")
-    st.markdown(
-        """
-        <div class="info-box amber">
-            <h4 style="margin: 0 0 0.5rem 0; color: #92400e;">💡 学習のヒント</h4>
-            <p style="margin: 0; font-size: 0.875rem; color: #92400e;">
-                最初は基本的なコマンド（add, commit, push, pull）から始めましょう。
-                実際に使いながら覚えるのが最も効果的です。右側の用語リストから
-                興味のある用語を選んで学習してください。
-            </p>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+    # 中央カラム：用語一覧
+    with col_mid:
+        st.subheader("📋 用語一覧")
+        st.caption(f"{len(filtered_terms)} 件ヒット")
 
-# 中央カラム: 用語リスト
-with col2:
-    st.markdown("### 📋 用語一覧")
-    st.markdown(
-        f"<p style='color: #6b7280; font-size: 0.875rem;'>{len(filtered_terms)}件の用語</p>",
-        unsafe_allow_html=True,
-    )
+        for category in CATEGORIES:
+            cat_terms = [t for t in filtered_terms if t["category"] == category]
+            if not cat_terms:
+                continue
 
-    categories = ["基本概念", "基本操作", "応用操作", "トラブルシューティング"]
-
-    for category in categories:
-        category_terms = [term for term in filtered_terms if term["category"] == category]
-
-        if category_terms:
             st.markdown(
                 f"<div class='category-header'>{category}</div>",
                 unsafe_allow_html=True,
             )
 
-            for term in category_terms:
-                if st.button(
-                    f"{term['name']}\n{term['short_description']}",
-                    key=term["id"],
-                    use_container_width=True,
-                ):
-                    st.session_state.selected_term_id = term["id"]
-                    st.experimental_rerun()
+            # ラジオボタンで選択させる（st.radio の活用）
+            radio_labels = [
+                f"{t['name']}：{t['short_description']}" for t in cat_terms
+            ]
+            default_index = None
+            for idx, t in enumerate(cat_terms):
+                if t["id"] == st.session_state.selected_term_id:
+                    default_index = idx
+                    break
 
-# 右カラム: 用語詳細
-with col3:
-    selected_term = next(
-        (term for term in TERMS if term["id"] == st.session_state.selected_term_id),
-        TERMS[0],
-    )
-
-    st.markdown(
-        f"<span class='tag'>📌 {selected_term['category']}</span>",
-        unsafe_allow_html=True,
-    )
-    st.markdown(f"## {selected_term['name']}")
-    st.markdown(
-        f"""
-        <p style="font-size: 1.125rem; color: #6b7280; margin-bottom: 1.5rem;">
-            {selected_term['short_description']}
-        </p>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    st.markdown("---")
-    st.markdown("### 📖 詳細説明")
-    st.markdown(
-        f"""
-        <div style="background-color: #f9fafb; padding: 1.5rem; border-radius: 0.5rem; margin-bottom: 1.5rem;">
-            <p style="color: #374151; line-height: 1.75; margin: 0;">
-                {selected_term['full_description']}
-            </p>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    if selected_term.get("examples"):
-        st.markdown("### 💻 使用例")
-        for example in selected_term["examples"]:
-            st.markdown(
-                f"""
-                <div class="code-block">
-                    <code>{example}</code>
-                </div>
-                """,
-                unsafe_allow_html=True,
+            selected_label = st.radio(
+                f"{category} の用語",
+                options=radio_labels,
+                index=default_index if default_index is not None else 0,
+                key=f"radio_{category}",
             )
 
-    if selected_term.get("related_terms"):
-        st.markdown("### 🔗 関連用語")
+            # 選択されたラベルに対応するIDを反映
+            for t in cat_terms:
+                label = f"{t['name']}：{t['short_description']}"
+                if label == selected_label:
+                    st.session_state.selected_term_id = t["id"]
+                    break
 
-        related_terms_data = [
-            term for term in TERMS if term["id"] in selected_term["related_terms"]
-        ]
+    # 右カラム：用語詳細
+    with col_right:
+        selected_term = next(
+            (t for t in TERMS if t["id"] == st.session_state.selected_term_id),
+            TERMS[0],
+        )
 
-        for related_term in related_terms_data:
-            if st.button(
-                f"{related_term['name']}\n{related_term['short_description']}",
-                key=f"related_{related_term['id']}",
-                use_container_width=True,
-            ):
-                st.session_state.selected_term_id = related_term["id"]
-                st.experimental_rerun()
+        st.subheader("📖 用語詳細")
 
-    st.markdown("---")
+        st.markdown(
+            f"<span class='tag'>📌 {selected_term['category']}</span>",
+            unsafe_allow_html=True,
+        )
+        st.markdown(f"### {selected_term['name']}")
+        st.markdown(
+            f"**一言説明：** {selected_term['short_description']}",
+        )
+
+        st.markdown("---")
+        st.markdown("#### 詳細説明")
+        st.markdown(
+            f"""
+<div style="background-color: #f9fafb; padding: 1rem; border-radius: 0.5rem;">
+  <p style="color: #374151; line-height: 1.75; margin: 0;">
+    {selected_term['full_description']}
+  </p>
+</div>
+""",
+            unsafe_allow_html=True,
+        )
+
+        if selected_term.get("examples"):
+            st.markdown("#### 💻 使用例")
+            for example in selected_term["examples"]:
+                st.code(example, language="bash")
+
+        if selected_term.get("related_terms"):
+            st.markdown("#### 🔗 関連用語")
+            related_terms = [
+                t
+                for t in TERMS
+                if t["id"] in selected_term.get("related_terms", [])
+            ]
+            for rt in related_terms:
+                if st.button(
+                    f"{rt['name']}：{rt['short_description']}",
+                    key=f"related_{rt['id']}",
+                ):
+                    st.session_state.selected_term_id = rt["id"]
+
+        st.markdown("---")
+        st.info(
+            "💬 サイドバーの「この用語の社内での使い方・注意点」にメモを残しておくと、"
+            "自分用のGitリファレンスとして育てることができます。"
+        )
+
+# ---------- タブ2：一覧表 & ダウンロード ----------
+with tab_table:
+    st.subheader("📊 用語一覧（表形式）")
+
+    table_data = [
+        {
+            "ID": t["id"],
+            "用語": t["name"],
+            "カテゴリ": t["category"],
+            "一言説明": t["short_description"],
+        }
+        for t in filtered_terms
+    ]
+    df = pd.DataFrame(table_data)
+
+    st.dataframe(df, use_container_width=True)
+
+    csv = df.to_csv(index=False).encode("utf-8-sig")
+
+    st.download_button(
+        label="📥 この一覧をCSVでダウンロード",
+        data=csv,
+        file_name="git_terms.csv",
+        mime="text/csv",
+    )
+
+    st.caption("※ 絞り込み条件・検索結果に応じた内容がダウンロードされます。")
+
+# ---------- タブ3：全体ノート ----------
+with tab_memo:
+    st.subheader("📝 学習ノート")
+
     st.markdown(
         """
-        <div class="info-box amber">
-            <p style="margin: 0; font-size: 0.875rem; color: #92400e;">
-                💡 <strong>ヒント：</strong>
-                実際にコマンドを試してみることで、理解が深まります。
-                テスト用のリポジトリを作成して練習しましょう。
-            </p>
-        </div>
-        """,
-        unsafe_allow_html=True,
+Gitやこの辞典を使って気づいたこと・疑問点・社内での運用ルール案などを、
+自由にメモしておくスペースです。（ローカルセッションのみ）
+"""
     )
+
+    if "global_note" not in st.session_state:
+        st.session_state.global_note = ""
+
+    global_note = st.text_area(
+        "自由メモ",
+        value=st.session_state.global_note,
+        height=200,
+    )
+    st.session_state.global_note = global_note
+
+    if global_note.strip():
+        st.success("✅ メモが保存されました（ブラウザを閉じるまでは保持されます）。")
+    else:
+        st.warning("まだメモがありません。学んだことを1行だけでも残しておくと、復習しやすくなります。")
 
