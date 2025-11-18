@@ -104,7 +104,7 @@ GIT_OVERVIEW = """
 
 ---
 
-## ◆ もっと短い完全版（Slack / Teams 用）
+## ◆ もっと短い完全版
 
 - **OneDrive**：ファイルの過去版を最大500個まで残す仕組み。  
 - **Git**：フォルダ全体の状態を何回でも保存し、いつでも戻れる仕組み。  
@@ -271,3 +271,4 @@ with col_right:
     st.markdown(f"**意味：** {term['meaning']}")
     st.markdown("---")
     st.markdown(term["desc"])
+
