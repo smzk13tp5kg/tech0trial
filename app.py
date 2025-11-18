@@ -186,11 +186,35 @@ TERMS = {
 col_left, col_center, col_right = st.columns([1.8, 0.8, 1.8])
 
 # ----------------------------------------
-# 左：Git全体の説明（固定）
+# 左：Git全体の説明（スクロール表示）
 # ----------------------------------------
 with col_left:
     st.subheader("Git の基本説明")
-    st.markdown(GIT_OVERVIEW)    # ★ HTMLラップせず、そのままMarkdownとして表示
+
+    # CSS で高さ固定＋スクロール枠を定義
+    st.markdown(
+        """
+        <style>
+        .scroll-box {
+            max-height: 600px;      /* 好きな高さに調整してOK */
+            overflow-y: auto;
+            padding-right: 10px;
+            border: 1px solid #DDD;
+            border-radius: 5px;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    # ▼ ここで「スクロール枠」を開く
+    st.markdown('<div class="scroll-box">', unsafe_allow_html=True)
+
+    # ▼ 中身は普通のMarkdownとして表示（ここがポイント）
+    st.markdown(GIT_OVERVIEW)
+
+    # ▼ div を閉じる
+    st.markdown("</div>", unsafe_allow_html=True)
 
 # ----------------------------------------
 # 中央：用語選択（固定）
@@ -212,3 +236,4 @@ with col_right:
     st.markdown(f"**意味：** {term['meaning']}")
     st.markdown("---")
     st.markdown(term["desc"])
+
