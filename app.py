@@ -1,169 +1,532 @@
 import streamlit as st
 
-# ----------------------------------------
 # ページ設定
-# ----------------------------------------
 st.set_page_config(
-    page_title="Git 用語辞典",
-    layout="wide"
+    page_title="Git用語辞典",
+    page_icon="📚",
+    layout="wide",
+    initial_sidebar_state="collapsed"
 )
 
-st.title("Git 用語ミニ辞典")
-st.write("「これって何のこと？どこで使うの？」という Git 用語を一覧・検索できるミニ辞典です。")
+# カスタムCSS
+st.markdown("""
+<style>
+    /* ヘッダースタイル */
+    .main-header {
+        background-color: white;
+        padding: 1.5rem;
+        border-bottom: 1px solid #e5e7eb;
+        margin-bottom: 0;
+    }
+    
+    /* カラムのスタイル */
+    [data-testid="column"] {
+        background-color: white;
+        padding: 1.5rem;
+        height: calc(100vh - 120px);
+        overflow-y: auto;
+    }
+    
+    [data-testid="column"]:nth-child(1) {
+        border-right: 1px solid #e5e7eb;
+    }
+    
+    [data-testid="column"]:nth-child(2) {
+        background-color: #f9fafb;
+        border-right: 1px solid #e5e7eb;
+    }
+    
+    /* 用語リストのボタン */
+    .term-button {
+        width: 100%;
+        text-align: left;
+        padding: 0.75rem 1rem;
+        margin-bottom: 0.5rem;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.5rem;
+        background-color: white;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .term-button:hover {
+        background-color: #f9fafb;
+        border-color: #3b82f6;
+    }
+    
+    .term-button.selected {
+        background-color: #eff6ff;
+        border-color: #3b82f6;
+    }
+    
+    /* カテゴリーヘッダー */
+    .category-header {
+        color: #6b7280;
+        font-size: 0.875rem;
+        font-weight: 600;
+        margin-top: 1.5rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    /* 情報ボックス */
+    .info-box {
+        padding: 1rem;
+        border-radius: 0.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .info-box.blue {
+        background-color: #eff6ff;
+        border: 1px solid #bfdbfe;
+    }
+    
+    .info-box.green {
+        background-color: #f0fdf4;
+        border: 1px solid #bbf7d0;
+    }
+    
+    .info-box.purple {
+        background-color: #faf5ff;
+        border: 1px solid #e9d5ff;
+    }
+    
+    .info-box.amber {
+        background-color: #fffbeb;
+        border: 1px solid #fde68a;
+    }
+    
+    /* コードブロック */
+    .code-block {
+        background-color: #1e293b;
+        color: #e2e8f0;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        font-family: monospace;
+        margin-bottom: 0.75rem;
+        font-size: 0.875rem;
+    }
+    
+    /* タグ */
+    .tag {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        background-color: #eff6ff;
+        color: #2563eb;
+        border-radius: 0.25rem;
+        font-size: 0.875rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    /* ワークフローステップ */
+    .workflow-step {
+        display: flex;
+        gap: 0.75rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    .step-number {
+        width: 1.5rem;
+        height: 1.5rem;
+        background-color: #dbeafe;
+        color: #2563eb;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.875rem;
+        flex-shrink: 0;
+    }
+    
+    /* 関連用語カード */
+    .related-term {
+        background-color: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        margin-bottom: 0.75rem;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .related-term:hover {
+        background-color: #f9fafb;
+        border-color: #3b82f6;
+    }
+    
+    /* Streamlitデフォルトのマージンを調整 */
+    .block-container {
+        padding-top: 2rem;
+        padding-bottom: 1rem;
+    }
+    
+    /* 検索ボックス */
+    .stTextInput > div > div > input {
+        border-radius: 0.5rem;
+    }
+</style>
+""", unsafe_allow_html=True)
 
-# ----------------------------------------
-# Git 全体説明（左カラムに表示）
-# ----------------------------------------
-GIT_OVERVIEW = """
-### **◆ OneDrive と Git の違い**
-
-#### 1. 管理する単位が違う
-**OneDrive**：ファイル単位の過去版を保存（最大500版）  
-**Git**：フォルダ全体の“その瞬間の状態”を保存（履歴は無制限）
-
-#### 2. 壊したときに戻せる範囲が違う
-**OneDrive**  
-- 消したファイルだけ戻せる  
-- フォルダ全体の構成までは戻らない  
-
-**Git**  
-- フォルダ全体を過去状態に戻せる  
-- うっかり削除しても安全  
-
-#### 3. 履歴の作られ方が違う
-**OneDrive**：修正前のファイルコピーを丸ごと保存  
-
-**Git**：  
-- 変わった部分だけ新しく保存  
-- 変わらない部分は過去のデータを再利用  
-→ それでも「フォルダ丸ごとのスナップショット」が残る
-
-#### 4. 複数人で作業する仕組みが違う
-**OneDrive**：同じファイルを開くと上書きがぶつかりやすい  
-
-**Git**：  
-- ブランチ（作業用コピー）を作れる  
-- 各自が自分のコピーで自由に作業し、最後にマージ（統合）できる
-"""
-
-# ----------------------------------------
-# 用語データ（右カラムで切り替わる）
-# ----------------------------------------
-TERMS = {
-    "リポジトリ（repository）": {
-        "meaning": "フォルダ全体の履歴を保存する場所（プロジェクトのタイムマシン）。",
-        "desc": """
-- Git が履歴を保存する場所  
-- OneDrive は「ファイル単位」だが、Git は「フォルダ全体」を管理  
-- 過去の任意の状態にフォルダごと戻せる  
-"""
+# 用語データ
+TERMS = [
+    {
+        "id": "repository",
+        "name": "リポジトリ (Repository)",
+        "category": "基本概念",
+        "short_description": "プロジェクトのファイルと履歴を保存する場所",
+        "full_description": "リポジトリは、Gitでプロジェクトを管理するための保管場所です。ファイルやディレクトリの状態を記録し、その変更履歴を保存します。ローカルリポジトリ（自分のPC上）とリモートリポジトリ（GitHubなどのサーバー上）の2種類があります。",
+        "examples": [
+            "git init でローカルリポジトリを作成",
+            "git clone でリモートリポジトリを複製"
+        ],
+        "related_terms": ["commit", "clone", "remote"]
     },
-    "リモートリポジトリ（remote repository）": {
-        "meaning": "インターネット上にある共有リポジトリ。",
-        "desc": """
-- GitHub や Azure DevOps 上にある共有の履歴置き場  
-- チームメンバーが push / pull して使う  
-"""
+    {
+        "id": "commit",
+        "name": "コミット (Commit)",
+        "category": "基本操作",
+        "short_description": "変更を記録すること",
+        "full_description": "コミットは、ファイルの変更をリポジトリに記録する操作です。スナップショットのように、その時点のプロジェクトの状態を保存します。各コミットには一意のIDが付与され、いつでもその状態に戻ることができます。コミットメッセージを付けることで、何を変更したかを記録できます。",
+        "examples": [
+            "git add . で変更をステージング",
+            "git commit -m \"メッセージ\" でコミット"
+        ],
+        "related_terms": ["staging", "push", "log"]
     },
-    "ローカルリポジトリ（local repository）": {
-        "meaning": "自分のPCにある履歴のコピー。",
-        "desc": """
-- 自分の PC 上にある Git の履歴（.git フォルダ）  
-- 作業のほとんどはローカルで完結し、まとまったらリモートに push する  
-"""
+    {
+        "id": "branch",
+        "name": "ブランチ (Branch)",
+        "category": "基本概念",
+        "short_description": "作業を分岐させる機能",
+        "full_description": "ブランチは、開発作業を本流から分岐させる機能です。新機能の開発やバグ修正を、メインの開発ラインに影響を与えずに行えます。作業が完了したら、マージして本流に統合します。複数人での並行開発に不可欠な機能です。",
+        "examples": [
+            "git branch feature/new-feature で新しいブランチ作成",
+            "git checkout -b feature/new-feature でブランチ作成と切り替えを同時に実行"
+        ],
+        "related_terms": ["merge", "checkout", "main"]
     },
-    "ブランチ（branch）": {
-        "meaning": "プロジェクトの“作業用コピー”を並列に持てる仕組み。",
-        "desc": """
-- フォルダ丸ごとの「作業レーン」  
-- main とは別の線路の上で安全に試せる  
-- OneDrive のような上書き競合を避けられる  
-"""
+    {
+        "id": "merge",
+        "name": "マージ (Merge)",
+        "category": "基本操作",
+        "short_description": "ブランチを統合すること",
+        "full_description": "マージは、異なるブランチの変更を統合する操作です。feature ブランチでの開発が完了したら、main ブランチにマージして変更を反映させます。自動的に統合できない場合はコンフリクトが発生し、手動で解決する必要があります。",
+        "examples": [
+            "git merge feature/new-feature で現在のブランチにマージ",
+            "git merge --no-ff でマージコミットを必ず作成"
+        ],
+        "related_terms": ["branch", "conflict", "rebase"]
     },
-    "プッシュ（push）": {
-        "meaning": "ローカルの履歴をリモートに送ること。",
-        "desc": """
-- 自分のコミットを GitHub などの共有リポジトリに送る  
-- チームへの「成果物提出」に相当  
-"""
+    {
+        "id": "push",
+        "name": "プッシュ (Push)",
+        "category": "基本操作",
+        "short_description": "ローカルの変更をリモートに送信",
+        "full_description": "プッシュは、ローカルリポジトリのコミットをリモートリポジトリに送信する操作です。これにより、他の開発者と変更を共有できます。プッシュする前に、リモートの最新状態を取得（pull）することが推奨されます。",
+        "examples": [
+            "git push origin main でmainブランチをプッシュ",
+            "git push -u origin feature でブランチを初回プッシュ"
+        ],
+        "related_terms": ["pull", "remote", "commit"]
     },
-    "プル（pull）": {
-        "meaning": "リモートの変更を取り込み、自分の作業に反映。",
-        "desc": """
-- `fetch + merge` をまとめて行う操作  
-- 他メンバーの作業を自分のブランチに取り込む  
-"""
+    {
+        "id": "pull",
+        "name": "プル (Pull)",
+        "category": "基本操作",
+        "short_description": "リモートの変更をローカルに取り込む",
+        "full_description": "プルは、リモートリポジトリの変更をローカルリポジトリに取り込む操作です。fetch（取得）とmerge（統合）を同時に行います。チーム開発では、作業開始前に必ずpullして最新状態にすることが重要です。",
+        "examples": [
+            "git pull origin main でリモートの変更を取得",
+            "git pull --rebase でリベースしながら取得"
+        ],
+        "related_terms": ["push", "fetch", "merge"]
     },
-    "クローン（clone）": {
-        "meaning": "リモートのリポジトリを丸ごと手元にコピー。",
-        "desc": """
-- `git clone URL` で実行  
-- 履歴すべてを含んだ「完全コピー」  
-- 作業を始めるとき最初に行う  
-"""
+    {
+        "id": "clone",
+        "name": "クローン (Clone)",
+        "category": "基本操作",
+        "short_description": "リモートリポジトリを複製",
+        "full_description": "クローンは、リモートリポジトリ全体をローカルにコピーする操作です。GitHubなどからプロジェクトをダウンロードして開発を始める際に使用します。履歴も含めて完全にコピーされます。",
+        "examples": [
+            "git clone https://github.com/user/repo.git",
+            "git clone git@github.com:user/repo.git でSSH経由でクローン"
+        ],
+        "related_terms": ["repository", "remote", "fetch"]
     },
-    "コミット（commit）": {
-        "meaning": "フォルダ全体の“状態”を保存すること。",
-        "desc": """
-- プロジェクトのスナップショットを1枚撮るイメージ  
-- メッセージ付きで「何をした変更か」を残す  
-- OneDrive より強力：フォルダ全体＆無制限  
-"""
+    {
+        "id": "staging",
+        "name": "ステージング (Staging)",
+        "category": "基本概念",
+        "short_description": "コミット対象を準備するエリア",
+        "full_description": "ステージングエリア（インデックス）は、次のコミットに含める変更を準備する場所です。git addコマンドでファイルをステージングし、git commitで実際にコミットします。この仕組みにより、変更の一部だけをコミットすることができます。",
+        "examples": [
+            "git add file.txt で特定のファイルをステージング",
+            "git add . ですべての変更をステージング",
+            "git reset HEAD file.txt でステージングを取り消し"
+        ],
+        "related_terms": ["commit", "add", "status"]
     },
-}
+    {
+        "id": "conflict",
+        "name": "コンフリクト (Conflict)",
+        "category": "トラブルシューティング",
+        "short_description": "変更が競合している状態",
+        "full_description": "コンフリクトは、同じファイルの同じ箇所を異なる方法で変更した際に発生します。Gitが自動的に��ージできない場合、手動で解決する必要があります。コンフリクトマーカー（<<<<<<<, =======, >>>>>>>）が挿入されるので、どちらの変更を採用するか決定します。",
+        "examples": [
+            "コンフリクトマーカーを確認",
+            "必要な変更を残して不要な部分を削除",
+            "git add で解決済みをマーク",
+            "git commit でマージを完了"
+        ],
+        "related_terms": ["merge", "rebase", "diff"]
+    },
+    {
+        "id": "remote",
+        "name": "リモート (Remote)",
+        "category": "基本概念",
+        "short_description": "リモートリポジトリへの参照",
+        "full_description": "リモートは、ネットワーク上のリポジトリへの参照です。通常「origin」という名前が付けられます。複数のリモートを設定することも可能で、チーム開発では必須の概念です。",
+        "examples": [
+            "git remote -v でリモート一覧を表示",
+            "git remote add origin <URL> でリモートを追加",
+            "git remote rename old new で名前変更"
+        ],
+        "related_terms": ["push", "pull", "clone"]
+    },
+    {
+        "id": "fetch",
+        "name": "フェッチ (Fetch)",
+        "category": "基本操作",
+        "short_description": "リモートの情報を取得（マージはしない）",
+        "full_description": "フェッチは、リモートリポジトリの最新情報を取得しますが、ローカルのブランチには自動的にマージしません。pullと異なり、安全に確認してからマージできます。",
+        "examples": [
+            "git fetch origin でリモートの情報を取得",
+            "git fetch --all ですべてのリモートから取得"
+        ],
+        "related_terms": ["pull", "remote", "merge"]
+    },
+    {
+        "id": "rebase",
+        "name": "リベース (Rebase)",
+        "category": "応用操作",
+        "short_description": "コミット履歴を整理",
+        "full_description": "リベースは、コミット履歴を別のベース上に付け替える操作です。mergeと異なり、履歴を一直線に保つことができます。ただし、既に共有されているコミットには使用すべきではありません。",
+        "examples": [
+            "git rebase main で現在のブランチをmainの最新に付け替え",
+            "git rebase -i HEAD~3 で対話的にコミットを整理"
+        ],
+        "related_terms": ["merge", "commit", "interactive"]
+    },
+    {
+        "id": "stash",
+        "name": "スタッシュ (Stash)",
+        "category": "応用操作",
+        "short_description": "作業中の変更を一時退避",
+        "full_description": "スタッシュは、コミットせずに作業中の変更を一時的に退避させる機能です。ブランチを切り替える必要があるが、まだコミットしたくない場合に便利です。",
+        "examples": [
+            "git stash で変更を退避",
+            "git stash pop で退避した変更を復元",
+            "git stash list で退避一覧を表示"
+        ],
+        "related_terms": ["commit", "checkout", "branch"]
+    },
+    {
+        "id": "tag",
+        "name": "タグ (Tag)",
+        "category": "応用操作",
+        "short_description": "特定のコミットに印をつける",
+        "full_description": "タグは、特定のコミットに名前をつけて記録する機能です。主にリリースバージョンを記録するために使用されます（v1.0.0など）。軽量タグと注釈付きタグの2種類があります。",
+        "examples": [
+            "git tag v1.0.0 で軽量タグを作成",
+            "git tag -a v1.0.0 -m \"Release 1.0\" で注釈付きタグ",
+            "git push origin v1.0.0 でタグをプッシュ"
+        ],
+        "related_terms": ["commit", "release", "version"]
+    },
+    {
+        "id": "checkout",
+        "name": "チェックアウト (Checkout)",
+        "category": "基本操作",
+        "short_description": "ブランチやコミットを切り替える",
+        "full_description": "チェックアウトは、作業するブランチを切り替えたり、過去のコミットの状態を確認したりする操作です。Git 2.23以降では、switch（ブランチ切り替え）とrestore（ファイル復元）に分割されました。",
+        "examples": [
+            "git checkout main でmainブランチに切り替え",
+            "git checkout -b new-branch で新ブランチ作成と切り替え",
+            "git checkout <commit-id> で特定のコミットを確認"
+        ],
+        "related_terms": ["branch", "switch", "restore"]
+    }
+]
 
-# ----------------------------------------
-# 3 カラム構成
-# 左：Git説明 / 中：用語選択 / 右：用語解説
-# ----------------------------------------
-col_left, col_center, col_right = st.columns([1.8, 0.9, 1.8])
+# セッション状態の初期化
+if 'selected_term_id' not in st.session_state:
+    st.session_state.selected_term_id = 'repository'
 
-# ----------------------------------------
-# 左：Git全体の説明（この枠だけスクロール）
-# ----------------------------------------
-with col_left:
-    st.subheader("Git の基本説明")
+if 'search_query' not in st.session_state:
+    st.session_state.search_query = ''
 
-    # このクラスにだけスクロールを適用するCSS
-    st.markdown(
-        """
-        <style>
-        .git-overview-box {
-            max-height: 600px;
-            overflow-y: auto;
-            padding: 15px;
-            border: 1px solid #DDD;
-            border-radius: 5px;
-            background-color: #FAFAFA;
-        }
-        </style>
-        """,
-        unsafe_allow_html=True,
-    )
+# ヘッダー
+st.markdown("""
+<div class="main-header">
+    <h1 style="margin: 0; font-size: 1.5rem; color: #111827;">📚 Git用語辞典</h1>
+</div>
+""", unsafe_allow_html=True)
 
-    # Markdown + スクロール枠を一度に描画（他のMarkdownには影響しない）
-    st.markdown(f'<div class="git-overview-box">{GIT_OVERVIEW}</div>', unsafe_allow_html=True)
+# 検索バー
+search_col1, search_col2 = st.columns([3, 1])
+with search_col1:
+    search_query = st.text_input("🔍 用語を検索...", value=st.session_state.search_query, label_visibility="collapsed", placeholder="用語を検索...")
+    st.session_state.search_query = search_query
 
-# ----------------------------------------
-# 中央：用語選択
-# ----------------------------------------
-with col_center:
-    st.subheader("用語を選択")
+# 用語をフィルタリング
+filtered_terms = [
+    term for term in TERMS
+    if search_query.lower() in term['name'].lower() or search_query.lower() in term['short_description'].lower()
+]
 
-    # （必要ならここにだけ効くCSSを書く。今はシンプルにしておく）
-    selected = st.radio(
-        "",
-        list(TERMS.keys()),
-        index=0
-    )
+# 3カラムレイアウト
+col1, col2, col3 = st.columns([1.2, 1, 2])
 
-# ----------------------------------------
-# 右：用語の説明
-# ----------------------------------------
-with col_right:
-    term = TERMS[selected]
-    st.subheader(selected)
-    st.markdown(f"**意味：** {term['meaning']}")
+# 左カラム: Gitの説明
+with col1:
+    st.markdown("### 🌿 Gitとは")
+    st.markdown("Gitは、ソースコードのバージョン管理システムです。ファイルの変更履歴を記録し、過去の状態にいつでも戻ることができます。")
+    
+    st.markdown("""
+    <div class="info-box blue">
+        <h4 style="margin: 0 0 0.5rem 0; color: #1e40af;">📖 なぜGitが必要？</h4>
+        <ul style="margin: 0; padding-left: 1.25rem; font-size: 0.875rem; color: #1e40af;">
+            <li>変更履歴を完全に記録</li>
+            <li>いつでも過去の状態に戻せる</li>
+            <li>複数人で同時に開発可能</li>
+            <li>実験的な開発を安全に実施</li>
+        </ul>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("""
+    <div class="info-box green">
+        <h4 style="margin: 0 0 0.5rem 0; color: #166534;">👥 チーム開発での利点</h4>
+        <ul style="margin: 0; padding-left: 1.25rem; font-size: 0.875rem; color: #166534;">
+            <li>各自が独立して作業できる</li>
+            <li>変更内容を簡単に共有</li>
+            <li>コードレビューが容易</li>
+            <li>誰が何を変更したか追跡可能</li>
+        </ul>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("""
+    <div class="info-box purple">
+        <h4 style="margin: 0 0 0.5rem 0; color: #6b21a8;">🛡️ 安全性</h4>
+        <ul style="margin: 0; padding-left: 1.25rem; font-size: 0.875rem; color: #6b21a8;">
+            <li>データの完全性を保証</li>
+            <li>分散型で障害に強い</li>
+            <li>バックアップが自動的に作成</li>
+            <li>誤った変更も簡単に復元</li>
+        </ul>
+    </div>
+    """, unsafe_allow_html=True)
+    
     st.markdown("---")
-    st.markdown(term["desc"])
+    st.markdown("### 🔄 基本的なワークフロー")
+    
+    for i, step in enumerate([
+        "ファイルを編集",
+        "変更をステージング（git add）",
+        "コミット（git commit）",
+        "リモートにプッシュ（git push）"
+    ], 1):
+        st.markdown(f"""
+        <div class="workflow-step">
+            <div class="step-number">{i}</div>
+            <div style="font-size: 0.875rem; color: #374151; padding-top: 0.125rem;">{step}</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    st.markdown("---")
+    st.markdown("""
+    <div class="info-box amber">
+        <h4 style="margin: 0 0 0.5rem 0; color: #92400e;">💡 学習のヒント</h4>
+        <p style="margin: 0; font-size: 0.875rem; color: #92400e;">
+            最初は基本的なコマンド（add, commit, push, pull）から始めましょう。実際に使いながら覚えるのが最も効果的です。右側の用語リストから興味のある用語を選んで学習してください。
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
 
+# 中央カラム: 用語リスト
+with col2:
+    st.markdown(f"### 📋 用語一覧")
+    st.markdown(f"<p style='color: #6b7280; font-size: 0.875rem;'>{len(filtered_terms)}件の用語</p>", unsafe_allow_html=True)
+    
+    # カテゴリー別に表示
+    categories = ["基本概念", "基本操作", "応用操作", "トラブルシューティング"]
+    
+    for category in categories:
+        category_terms = [term for term in filtered_terms if term['category'] == category]
+        
+        if category_terms:
+            st.markdown(f"<div class='category-header'>{category}</div>", unsafe_allow_html=True)
+            
+            for term in category_terms:
+                button_class = "term-button selected" if term['id'] == st.session_state.selected_term_id else "term-button"
+                
+                if st.button(
+                    f"{term['name']}\n{term['short_description']}", 
+                    key=term['id'],
+                    use_container_width=True
+                ):
+                    st.session_state.selected_term_id = term['id']
+                    st.rerun()
+
+# 右カラム: 用語詳細
+with col3:
+    # 選択された用語を取得
+    selected_term = next((term for term in TERMS if term['id'] == st.session_state.selected_term_id), TERMS[0])
+    
+    st.markdown(f"<span class='tag'>📌 {selected_term['category']}</span>", unsafe_allow_html=True)
+    st.markdown(f"## {selected_term['name']}")
+    st.markdown(f"<p style='font-size: 1.125rem; color: #6b7280; margin-bottom: 1.5rem;'>{selected_term['short_description']}</p>", unsafe_allow_html=True)
+    
+    st.markdown("---")
+    
+    st.markdown("### 📖 詳細説明")
+    st.markdown(f"""
+    <div style="background-color: #f9fafb; padding: 1.5rem; border-radius: 0.5rem; margin-bottom: 1.5rem;">
+        <p style="color: #374151; line-height: 1.75; margin: 0;">{selected_term['full_description']}</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    if selected_term.get('examples'):
+        st.markdown("### 💻 使用例")
+        for example in selected_term['examples']:
+            st.markdown(f"""
+            <div class="code-block">
+                <code>{example}</code>
+            </div>
+            """, unsafe_allow_html=True)
+    
+    if selected_term.get('related_terms'):
+        st.markdown("### 🔗 関連用語")
+        
+        related_terms_data = [
+            term for term in TERMS 
+            if term['id'] in selected_term['related_terms']
+        ]
+        
+        for related_term in related_terms_data:
+            if st.button(
+                f"{related_term['name']}\n{related_term['short_description']}", 
+                key=f"related_{related_term['id']}",
+                use_container_width=True
+            ):
+                st.session_state.selected_term_id = related_term['id']
+                st.rerun()
+    
+    st.markdown("---")
+    st.markdown("""
+    <div class="info-box amber">
+        <p style="margin: 0; font-size: 0.875rem; color: #92400e;">
+            💡 <strong>ヒント：</strong> 実際にコマンドを試してみることで、理解が深まります。テスト用のリポジトリを作成して練習しましょう。
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
