@@ -120,7 +120,7 @@ TERMS = {
         "meaning": "フォルダ全体の履歴を保存する場所（プロジェクトのタイムマシン）。",
         "desc": """
 - Git が履歴を保存する場所  
-- OneDrive は“ファイル単位”だが、Git は“フォルダ全体”を管理  
+- OneDrive は"ファイル単位"だが、Git は"フォルダ全体"を管理  
 - 過去の任意の状態にフォルダごと戻せる  
 """
     },
@@ -139,9 +139,9 @@ TERMS = {
 """
     },
     "ブランチ（branch）": {
-        "meaning": "プロジェクトの“作業用コピー”を並列に持てる仕組み。",
+        "meaning": "プロジェクトの"作業用コピー"を並列に持てる仕組み。",
         "desc": """
-- フォルダ丸ごとの“作業レーン”  
+- フォルダ丸ごとの"作業レーン"  
 - main とは別の線路の上で安全に試せる  
 - OneDrive のような上書き競合を避けられる  
 """
@@ -150,7 +150,7 @@ TERMS = {
         "meaning": "ローカルの履歴をリモートに送ること。",
         "desc": """
 - 自分のコミットを GitHub などの共有リポジトリに送る  
-- チームへの“成果物提出”に相当  
+- チームへの"成果物提出"に相当  
 """
     },
     "プル（pull）": {
@@ -164,19 +164,18 @@ TERMS = {
         "meaning": "リモートのリポジトリを丸ごと手元にコピー。",
         "desc": """
 - `git clone URL` で実行  
-- 履歴すべてを含んだ“完全コピー”  
+- 履歴すべてを含んだ"完全コピー"  
 - 作業を始める最初の一手  
 """
     },
     "コミット（commit）": {
-        "meaning": "フォルダ全体の“状態”を保存すること。",
+        "meaning": "フォルダ全体の"状態"を保存すること。",
         "desc": """
 - プロジェクトのスナップショットを1枚撮るイメージ  
 - メッセージ付きで「何をした変更か」を残す  
 - OneDrive より強力：フォルダ全体＆無制限  
 """
     },
-    # 他の用語も同じスタイルで追加していけばOK
 }
 
 # ----------------------------------------
@@ -190,31 +189,26 @@ col_left, col_center, col_right = st.columns([1.8, 0.8, 1.8])
 # ----------------------------------------
 with col_left:
     st.subheader("Git の基本説明")
-
-    # CSS で高さ固定＋スクロール枠を定義
+    
+    # HTMLでMarkdownをラップしてスクロール可能にする
     st.markdown(
-        """
+        f"""
         <style>
-        .scroll-box {
-            max-height: 600px;      /* 好きな高さに調整してOK */
+        .scroll-box {{
+            max-height: 600px;
             overflow-y: auto;
-            padding-right: 10px;
+            padding: 15px;
             border: 1px solid #DDD;
             border-radius: 5px;
-        }
+            background-color: #FAFAFA;
+        }}
         </style>
+        <div class="scroll-box">
+        {GIT_OVERVIEW}
+        </div>
         """,
         unsafe_allow_html=True,
     )
-
-    # ▼ ここで「スクロール枠」を開く
-    st.markdown('<div class="scroll-box">', unsafe_allow_html=True)
-
-    # ▼ 中身は普通のMarkdownとして表示（ここがポイント）
-    st.markdown(GIT_OVERVIEW)
-
-    # ▼ div を閉じる
-    st.markdown("</div>", unsafe_allow_html=True)
 
 # ----------------------------------------
 # 中央：用語選択（固定）
@@ -236,4 +230,3 @@ with col_right:
     st.markdown(f"**意味：** {term['meaning']}")
     st.markdown("---")
     st.markdown(term["desc"])
-
