@@ -1,6 +1,8 @@
 import streamlit as st
 
+# ==============================
 # ページ設定
+# ==============================
 st.set_page_config(
     page_title="Git用語辞典",
     page_icon="📚",
@@ -8,34 +10,59 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
+# ==============================
 # カスタムCSS
+# ==============================
 st.markdown("""
 <style>
+    /* 全体コンテナの余白調整 */
+    .block-container {
+        padding-top: 1.5rem;
+        padding-bottom: 1rem;
+        max-width: 1600px;
+    }
+
     /* ヘッダースタイル */
     .main-header {
         background-color: white;
-        padding: 1.5rem;
+        padding: 1.0rem 1.5rem;
         border-bottom: 1px solid #e5e7eb;
         margin-bottom: 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
     }
-    
-    /* カラムのスタイル */
-    [data-testid="column"] {
-        background-color: white;
-        padding: 1.5rem;
-        height: calc(100vh - 120px);
+
+    .main-header h1 {
+        margin: 0;
+        font-size: 1.25rem;
+        color: #111827;
+    }
+
+    /* 3カラム内側のスクロール領域（ここが重要） */
+    .left-pane,
+    .middle-pane,
+    .right-pane {
+        height: calc(100vh - 140px);  /* ヘッダー＋検索ボックス分を差し引き */
         overflow-y: auto;
+        padding: 1.5rem;
+        box-sizing: border-box;
     }
-    
-    [data-testid="column"]:nth-child(1) {
+
+    .left-pane {
+        background-color: #ffffff;
         border-right: 1px solid #e5e7eb;
     }
-    
-    [data-testid="column"]:nth-child(2) {
+
+    .middle-pane {
         background-color: #f9fafb;
         border-right: 1px solid #e5e7eb;
     }
-    
+
+    .right-pane {
+        background-color: #ffffff;
+    }
+
     /* 用語リストのボタン */
     .term-button {
         width: 100%;
@@ -47,18 +74,19 @@ st.markdown("""
         background-color: white;
         cursor: pointer;
         transition: all 0.2s;
+        font-size: 0.875rem;
     }
-    
+
     .term-button:hover {
         background-color: #f9fafb;
         border-color: #3b82f6;
     }
-    
+
     .term-button.selected {
         background-color: #eff6ff;
         border-color: #3b82f6;
     }
-    
+
     /* カテゴリーヘッダー */
     .category-header {
         color: #6b7280;
@@ -67,34 +95,34 @@ st.markdown("""
         margin-top: 1.5rem;
         margin-bottom: 0.5rem;
     }
-    
+
     /* 情報ボックス */
     .info-box {
         padding: 1rem;
         border-radius: 0.5rem;
         margin-bottom: 1rem;
     }
-    
+
     .info-box.blue {
         background-color: #eff6ff;
         border: 1px solid #bfdbfe;
     }
-    
+
     .info-box.green {
         background-color: #f0fdf4;
         border: 1px solid #bbf7d0;
     }
-    
+
     .info-box.purple {
         background-color: #faf5ff;
         border: 1px solid #e9d5ff;
     }
-    
+
     .info-box.amber {
         background-color: #fffbeb;
         border: 1px solid #fde68a;
     }
-    
+
     /* コードブロック */
     .code-block {
         background-color: #1e293b;
@@ -105,7 +133,7 @@ st.markdown("""
         margin-bottom: 0.75rem;
         font-size: 0.875rem;
     }
-    
+
     /* タグ */
     .tag {
         display: inline-block;
@@ -114,16 +142,16 @@ st.markdown("""
         color: #2563eb;
         border-radius: 0.25rem;
         font-size: 0.875rem;
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.75rem;
     }
-    
+
     /* ワークフローステップ */
     .workflow-step {
         display: flex;
         gap: 0.75rem;
         margin-bottom: 0.75rem;
     }
-    
+
     .step-number {
         width: 1.5rem;
         height: 1.5rem;
@@ -136,7 +164,7 @@ st.markdown("""
         font-size: 0.875rem;
         flex-shrink: 0;
     }
-    
+
     /* 関連用語カード */
     .related-term {
         background-color: white;
@@ -147,26 +175,23 @@ st.markdown("""
         cursor: pointer;
         transition: all 0.2s;
     }
-    
+
     .related-term:hover {
         background-color: #f9fafb;
         border-color: #3b82f6;
     }
-    
-    /* Streamlitデフォルトのマージンを調整 */
-    .block-container {
-        padding-top: 2rem;
-        padding-bottom: 1rem;
-    }
-    
+
     /* 検索ボックス */
     .stTextInput > div > div > input {
         border-radius: 0.5rem;
     }
+
 </style>
 """, unsafe_allow_html=True)
 
+# ==============================
 # 用語データ
+# ==============================
 TERMS = [
     {
         "id": "repository",
@@ -270,7 +295,7 @@ TERMS = [
         "name": "コンフリクト (Conflict)",
         "category": "トラブルシューティング",
         "short_description": "変更が競合している状態",
-        "full_description": "コンフリクトは、同じファイルの同じ箇所を異なる方法で変更した際に発生します。Gitが自動的に��ージできない場合、手動で解決する必要があります。コンフリクトマーカー（<<<<<<<, =======, >>>>>>>）が挿入されるので、どちらの変更を採用するか決定します。",
+        "full_description": "コンフリクトは、同じファイルの同じ箇所を異なる方法で変更した際に発生します。Gitが自動的にマージできない場合、手動で解決する必要があります。コンフリクトマーカー（<<<<<<<, =======, >>>>>>>）が挿入されるので、どちらの変更を採用するか決定します。",
         "examples": [
             "コンフリクトマーカーを確認",
             "必要な変更を残して不要な部分を削除",
@@ -357,176 +382,259 @@ TERMS = [
     }
 ]
 
+# ==============================
 # セッション状態の初期化
+# ==============================
 if 'selected_term_id' not in st.session_state:
     st.session_state.selected_term_id = 'repository'
 
 if 'search_query' not in st.session_state:
     st.session_state.search_query = ''
 
+# ==============================
 # ヘッダー
-st.markdown("""
-<div class="main-header">
-    <h1 style="margin: 0; font-size: 1.5rem; color: #111827;">📚 Git用語辞典</h1>
-</div>
-""", unsafe_allow_html=True)
+# ==============================
+st.markdown(
+    """
+    <div class="main-header">
+        <h1>📚 Git用語辞典</h1>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
 
+# ==============================
 # 検索バー
+# ==============================
 search_col1, search_col2 = st.columns([3, 1])
 with search_col1:
-    search_query = st.text_input("🔍 用語を検索...", value=st.session_state.search_query, label_visibility="collapsed", placeholder="用語を検索...")
+    search_query = st.text_input(
+        "🔍 用語を検索...",
+        value=st.session_state.search_query,
+        label_visibility="collapsed",
+        placeholder="用語を検索..."
+    )
     st.session_state.search_query = search_query
 
-# 用語をフィルタリング
+# フィルタリング
 filtered_terms = [
     term for term in TERMS
-    if search_query.lower() in term['name'].lower() or search_query.lower() in term['short_description'].lower()
+    if search_query.lower() in term['name'].lower()
+    or search_query.lower() in term['short_description'].lower()
 ]
 
+# ==============================
 # 3カラムレイアウト
-col1, col2, col3 = st.columns([1.2, 1, 2])
+# ==============================
+col_left, col_middle, col_right = st.columns([1.2, 1, 2])
 
-# 左カラム: Gitの説明
-with col1:
+# ---------- 左カラム：Gitの説明 ----------
+with col_left:
+    st.markdown('<div class="left-pane">', unsafe_allow_html=True)
+
     st.markdown("### 🌿 Gitとは")
-    st.markdown("Gitは、ソースコードのバージョン管理システムです。ファイルの変更履歴を記録し、過去の状態にいつでも戻ることができます。")
-    
-    st.markdown("""
-    <div class="info-box blue">
-        <h4 style="margin: 0 0 0.5rem 0; color: #1e40af;">📖 なぜGitが必要？</h4>
-        <ul style="margin: 0; padding-left: 1.25rem; font-size: 0.875rem; color: #1e40af;">
-            <li>変更履歴を完全に記録</li>
-            <li>いつでも過去の状態に戻せる</li>
-            <li>複数人で同時に開発可能</li>
-            <li>実験的な開発を安全に実施</li>
-        </ul>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    st.markdown("""
-    <div class="info-box green">
-        <h4 style="margin: 0 0 0.5rem 0; color: #166534;">👥 チーム開発での利点</h4>
-        <ul style="margin: 0; padding-left: 1.25rem; font-size: 0.875rem; color: #166534;">
-            <li>各自が独立して作業できる</li>
-            <li>変更内容を簡単に共有</li>
-            <li>コードレビューが容易</li>
-            <li>誰が何を変更したか追跡可能</li>
-        </ul>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    st.markdown("""
-    <div class="info-box purple">
-        <h4 style="margin: 0 0 0.5rem 0; color: #6b21a8;">🛡️ 安全性</h4>
-        <ul style="margin: 0; padding-left: 1.25rem; font-size: 0.875rem; color: #6b21a8;">
-            <li>データの完全性を保証</li>
-            <li>分散型で障害に強い</li>
-            <li>バックアップが自動的に作成</li>
-            <li>誤った変更も簡単に復元</li>
-        </ul>
-    </div>
-    """, unsafe_allow_html=True)
-    
+    st.markdown(
+        "Gitは、ソースコードのバージョン管理システムです。"
+        "ファイルの変更履歴を記録し、過去の状態にいつでも戻ることができます。"
+    )
+
+    st.markdown(
+        """
+        <div class="info-box blue">
+            <h4 style="margin: 0 0 0.5rem 0; color: #1e40af;">📖 なぜGitが必要？</h4>
+            <ul style="margin: 0; padding-left: 1.25rem; font-size: 0.875rem; color: #1e40af;">
+                <li>変更履歴を完全に記録</li>
+                <li>いつでも過去の状態に戻せる</li>
+                <li>複数人で同時に開発可能</li>
+                <li>実験的な開発を安全に実施</li>
+            </ul>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.markdown(
+        """
+        <div class="info-box green">
+            <h4 style="margin: 0 0 0.5rem 0; color: #166534;">👥 チーム開発での利点</h4>
+            <ul style="margin: 0; padding-left: 1.25rem; font-size: 0.875rem; color: #166534;">
+                <li>各自が独立して作業できる</li>
+                <li>変更内容を簡単に共有</li>
+                <li>コードレビューが容易</li>
+                <li>誰が何を変更したか追跡可能</li>
+            </ul>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.markdown(
+        """
+        <div class="info-box purple">
+            <h4 style="margin: 0 0 0.5rem 0; color: #6b21a8;">🛡️ 安全性</h4>
+            <ul style="margin: 0; padding-left: 1.25rem; font-size: 0.875rem; color: #6b21a8;">
+                <li>データの完全性を保証</li>
+                <li>分散型で障害に強い</li>
+                <li>バックアップが自動的に作成</li>
+                <li>誤った変更も簡単に復元</li>
+            </ul>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
     st.markdown("---")
     st.markdown("### 🔄 基本的なワークフロー")
-    
-    for i, step in enumerate([
-        "ファイルを編集",
-        "変更をステージング（git add）",
-        "コミット（git commit）",
-        "リモートにプッシュ（git push）"
-    ], 1):
-        st.markdown(f"""
-        <div class="workflow-step">
-            <div class="step-number">{i}</div>
-            <div style="font-size: 0.875rem; color: #374151; padding-top: 0.125rem;">{step}</div>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    st.markdown("---")
-    st.markdown("""
-    <div class="info-box amber">
-        <h4 style="margin: 0 0 0.5rem 0; color: #92400e;">💡 学習のヒント</h4>
-        <p style="margin: 0; font-size: 0.875rem; color: #92400e;">
-            最初は基本的なコマンド（add, commit, push, pull）から始めましょう。実際に使いながら覚えるのが最も効果的です。右側の用語リストから興味のある用語を選んで学習してください。
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
 
-# 中央カラム: 用語リスト
-with col2:
-    st.markdown(f"### 📋 用語一覧")
-    st.markdown(f"<p style='color: #6b7280; font-size: 0.875rem;'>{len(filtered_terms)}件の用語</p>", unsafe_allow_html=True)
-    
-    # カテゴリー別に表示
-    categories = ["基本概念", "基本操作", "応用操作", "トラブルシューティング"]
-    
-    for category in categories:
-        category_terms = [term for term in filtered_terms if term['category'] == category]
-        
-        if category_terms:
-            st.markdown(f"<div class='category-header'>{category}</div>", unsafe_allow_html=True)
-            
-            for term in category_terms:
-                button_class = "term-button selected" if term['id'] == st.session_state.selected_term_id else "term-button"
-                
-                if st.button(
-                    f"{term['name']}\n{term['short_description']}", 
-                    key=term['id'],
-                    use_container_width=True
-                ):
-                    st.session_state.selected_term_id = term['id']
-                    st.rerun()
-
-# 右カラム: 用語詳細
-with col3:
-    # 選択された用語を取得
-    selected_term = next((term for term in TERMS if term['id'] == st.session_state.selected_term_id), TERMS[0])
-    
-    st.markdown(f"<span class='tag'>📌 {selected_term['category']}</span>", unsafe_allow_html=True)
-    st.markdown(f"## {selected_term['name']}")
-    st.markdown(f"<p style='font-size: 1.125rem; color: #6b7280; margin-bottom: 1.5rem;'>{selected_term['short_description']}</p>", unsafe_allow_html=True)
-    
-    st.markdown("---")
-    
-    st.markdown("### 📖 詳細説明")
-    st.markdown(f"""
-    <div style="background-color: #f9fafb; padding: 1.5rem; border-radius: 0.5rem; margin-bottom: 1.5rem;">
-        <p style="color: #374151; line-height: 1.75; margin: 0;">{selected_term['full_description']}</p>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    if selected_term.get('examples'):
-        st.markdown("### 💻 使用例")
-        for example in selected_term['examples']:
-            st.markdown(f"""
-            <div class="code-block">
-                <code>{example}</code>
+    for i, step in enumerate(
+        [
+            "ファイルを編集",
+            "変更をステージング（git add）",
+            "コミット（git commit）",
+            "リモートにプッシュ（git push）",
+        ],
+        1,
+    ):
+        st.markdown(
+            f"""
+            <div class="workflow-step">
+                <div class="step-number">{i}</div>
+                <div style="font-size: 0.875rem; color: #374151; padding-top: 0.125rem;">
+                    {step}
+                </div>
             </div>
-            """, unsafe_allow_html=True)
-    
-    if selected_term.get('related_terms'):
-        st.markdown("### 🔗 関連用語")
-        
-        related_terms_data = [
-            term for term in TERMS 
-            if term['id'] in selected_term['related_terms']
-        ]
-        
-        for related_term in related_terms_data:
-            if st.button(
-                f"{related_term['name']}\n{related_term['short_description']}", 
-                key=f"related_{related_term['id']}",
-                use_container_width=True
-            ):
-                st.session_state.selected_term_id = related_term['id']
-                st.rerun()
-    
+            """,
+            unsafe_allow_html=True,
+        )
+
     st.markdown("---")
-    st.markdown("""
-    <div class="info-box amber">
-        <p style="margin: 0; font-size: 0.875rem; color: #92400e;">
-            💡 <strong>ヒント：</strong> 実際にコマンドを試してみることで、理解が深まります。テスト用のリポジトリを作成して練習しましょう。
+    st.markdown(
+        """
+        <div class="info-box amber">
+            <h4 style="margin: 0 0 0.5rem 0; color: #92400e;">💡 学習のヒント</h4>
+            <p style="margin: 0; font-size: 0.875rem; color: #92400e;">
+                最初は基本的なコマンド（add, commit, push, pull）から始めましょう。
+                実際に使いながら覚えるのが最も効果的です。
+                右側の用語リストから興味のある用語を選んで学習してください。
+            </p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
+# ---------- 中央カラム：用語一覧 ----------
+with col_middle:
+    st.markdown('<div class="middle-pane">', unsafe_allow_html=True)
+
+    st.markdown("### 📋 用語一覧")
+    st.markdown(
+        f"<p style='color: #6b7280; font-size: 0.875rem;'>{len(filtered_terms)}件の用語</p>",
+        unsafe_allow_html=True,
+    )
+
+    categories = ["基本概念", "基本操作", "応用操作", "トラブルシューティング"]
+
+    for category in categories:
+        category_terms = [t for t in filtered_terms if t["category"] == category]
+        if not category_terms:
+            continue
+
+        st.markdown(
+            f"<div class='category-header'>{category}</div>",
+            unsafe_allow_html=True,
+        )
+
+        for term in category_terms:
+            is_selected = term["id"] == st.session_state.selected_term_id
+            # st.button自体の見た目はそのままにして、textだけ渡す
+            if st.button(
+                f"{term['name']}\n{term['short_description']}",
+                key=term["id"],
+                use_container_width=True,
+            ):
+                st.session_state.selected_term_id = term["id"]
+                st.experimental_rerun()
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
+# ---------- 右カラム：用語詳細 ----------
+with col_right:
+    st.markdown('<div class="right-pane">', unsafe_allow_html=True)
+
+    selected_term = next(
+        (t for t in TERMS if t["id"] == st.session_state.selected_term_id),
+        TERMS[0],
+    )
+
+    st.markdown(
+        f"<span class='tag'>📌 {selected_term['category']}</span>",
+        unsafe_allow_html=True,
+    )
+    st.markdown(f"## {selected_term['name']}")
+    st.markdown(
+        f"""
+        <p style="font-size: 1.125rem; color: #6b7280; margin-bottom: 1.5rem;">
+            {selected_term['short_description']}
         </p>
-    </div>
-    """, unsafe_allow_html=True)
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.markdown("---")
+    st.markdown("### 📖 詳細説明")
+    st.markdown(
+        f"""
+        <div style="background-color: #f9fafb; padding: 1.5rem; border-radius: 0.5rem; margin-bottom: 1.5rem;">
+            <p style="color: #374151; line-height: 1.75; margin: 0;">
+                {selected_term['full_description']}
+            </p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    if selected_term.get("examples"):
+        st.markdown("### 💻 使用例")
+        for example in selected_term["examples"]:
+            st.markdown(
+                f"""
+                <div class="code-block">
+                    <code>{example}</code>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
+    if selected_term.get("related_terms"):
+        st.markdown("### 🔗 関連用語")
+
+        related_terms_data = [
+            t for t in TERMS if t["id"] in selected_term["related_terms"]
+        ]
+
+        for related in related_terms_data:
+            if st.button(
+                f"{related['name']}\n{related['short_description']}",
+                key=f"related_{related['id']}",
+                use_container_width=True,
+            ):
+                st.session_state.selected_term_id = related["id"]
+                st.experimental_rerun()
+
+    st.markdown("---")
+    st.markdown(
+        """
+        <div class="info-box amber">
+            <p style="margin: 0; font-size: 0.875rem; color: #92400e;">
+                💡 <strong>ヒント：</strong>
+                実際にコマンドを試してみることで、理解が深まります。
+                テスト用のリポジトリを作成して練習しましょう。
+            </p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.markdown("</div>", unsafe_allow_html=True)
