@@ -15,7 +15,7 @@ st.write("「これって何のこと？どこで使うの？」という Git �
 # Git 全体説明（左カラムに表示）
 # ----------------------------------------
 GIT_OVERVIEW = """
-### ◆ OneDrive と Git の違い
+### **◆ OneDrive と Git の違い**
 
 #### 1. 管理する単位が違う
 **OneDrive**：ファイル単位の過去版を保存（最大500版）  
@@ -166,3 +166,4 @@ with col_right:
     st.markdown(f"**意味：** {term['meaning']}")
     st.markdown("---")
     st.markdown(term["desc"])
+
